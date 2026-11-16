@@ -1,0 +1,29 @@
+README.md
+  s_cc11411866c986::t_9b7043c6f35171 20
+plugins/standup/.claude-plugin/plugin.json
+  s_cc11411866c986::t_374aa7433c53fe 3
+plugins/standup/skills/standup-brief/SKILL.md
+  s_cc11411866c986::t_522bad0b38b24e 57,59-61,74,76-77,81,86
+  s_cc11411866c986::t_2eab3db493d457 28,35-37,39,46,80,87
+  s_cc11411866c986::t_e1e0fd9ea6b326 43,48,50,52,54-55,63,65,67-69,71-72
+  s_cc11411866c986::t_173d0c80e0db98 85
+  s_cc11411866c986::t_e75ea0a4778f6a 9
+  s_cc11411866c986::t_9ecd4a1e654645 3
+  s_cc11411866c986::t_e59e8b6165dbe8 78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "bf84140a2d41177e22f0033d05949d61ae09ad52",
+  "prompts": {},
+  "sessions": {
+    "s_cc11411866c986": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d656bbc2-1b2a-4774-9485-bd28c2fb4448",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": null
+    }
+  }
+}
