@@ -1,6 +1,6 @@
 {
   "name": "standup",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Standup brief: what each of your open PRs does and how it was built, plus its review and CI state and what merged since your last standup, ready to say out loud",
   "author": {
     "name": "Jared Blumer"

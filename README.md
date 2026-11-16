@@ -17,7 +17,7 @@ Update after changes: `claude plugin marketplace update jaredblumer-plugins`.
 
 `/standup:standup-brief [--label <label>] [--repo <owner/name>] [--unassigned | --any-assignee]`
 
-A standup brief of your own work: PRs for review (what each does and how the code works, from its diff), what you're working on now (Jira tickets In Progress plus open PRs with no label yet), and what merged since your last standup. Read-only; needs `gh` logged in, and a Jira tool in the session (such as the Atlassian connector) for the Jira part.
+A standup brief in two parts: PRs to hand out for review, then what you finished and are working on today (Jira tickets In Progress plus open PRs with no label yet). Each PR gets a few bullets on how its code works, from its diff. Read-only; needs `gh` logged in, and a Jira tool in the session (such as the Atlassian connector) for the Jira part.
 
 Example: `/standup:standup-brief --label "M & F" --unassigned`
 

@@ -1,12 +1,12 @@
 ---
 name: standup-brief
-description: Write a standup brief of your own work — open PRs ready for review (what each does and how the code works, deep enough to answer "how does that work?"), what you're working on now (in-progress Jira tickets and PRs not yet labeled for review), and what merged since your last standup. Use when the user says "standup brief", "prep my standup", "what do I say at standup", or asks to describe their PRs or current work for a meeting.
+description: Write a standup brief of your own work in the meeting's two parts — PRs to hand out for review, then what you finished and what you're working on today (in-progress Jira tickets and PRs not yet labeled for review) — with a few bullets under each PR on how its code works, enough to answer "how does that work?". Use when the user says "standup brief", "prep my standup", "what do I say at standup", or asks to describe their PRs or current work for a meeting.
 argument-hint: "[--label <label>] [--repo <owner/name>] [--unassigned | --any-assignee] [--jira-jql <jql>]"
 ---
 
 # Standup brief
 
-Standup goes in this order: assign PRs for review, then say what each person is working on now. Give the user a short spoken summary of each item, and under it enough about how the code works that they can answer a teammate's follow-up questions without opening the PR.
+Standup has two parts: first the team hands out PRs for review, then each person says what they finished and what they're working on today. The brief follows that order. Each item opens with a sentence or two the user can read out, followed by a few short bullets on how the code works, for when someone asks.
 
 ## 1. Gather
 
@@ -25,71 +25,64 @@ Default filters come from `~/.claude/standup-brief.json` (keys `label`, `repo`, 
 
 Each PR carries its description, code files, test files, review and CI state, and `code_diff.path`, a saved diff of its code without tests, lockfiles or assets. If `gh` isn't logged in, stop and say so.
 
-Then run `jira_jql` with whatever Jira tool this session has (for example the Atlassian connector's JQL search), asking for summary, status and description. If no Jira tool is available or it fails, carry on without Jira and say so in one line under "Working on now".
+Then run `jira_jql` with whatever Jira tool this session has (for example the Atlassian connector's JQL search), asking for summary, status and description. If no Jira tool is available or it fails, carry on without Jira and say so in one line in part 2.
 
 ## 2. Read the code
 
 For every PR in `open` and `in_progress`, read its `code_diff.path` in full; the description alone isn't enough. If `code_diff.cut_files` lists files, read those files' full diffs with `gh pr diff`. Work out:
 
 - the root cause: what the old code did that produced the bug or gap
-- the mechanism of the fix: which function, component or class changes, what it does now, and how data flows through it
-- any decision a reviewer would question: a trade-off, an edge case it handles, or something it deliberately leaves out
-- what the tests prove, from `test_files` and the description
+- the mechanism of the fix: which function, component or class changes, and what it does now
+- the one or two decisions a reviewer would question: a trade-off, an edge case, or something it deliberately leaves out
+- for an in-progress PR, what's unfinished: the draft flag, TODOs, missing tests, or open work named in the description
 
-For an in-progress PR, also note what looks unfinished: TODOs, a draft flag, missing tests, or a description that names open work.
-
-When there are more than four PRs in all, hand each PR's reading to a subagent in parallel, giving it the diff path and the description, and asking for the points above.
+When there are more than four PRs in all, hand each PR's reading to a subagent in parallel, giving it the diff path and the description, and asking for the points above in under 100 words. Don't narrate the subagents' progress; write nothing until the brief is ready.
 
 ## 3. Write the brief
 
-Use markdown. Start with one line of counts, e.g. "4 PRs for review (2 need a reviewer), 3 things in progress, 3 merged since Friday."
-
-### For review
-
-One section per PR in `open`, newest activity first:
+Use markdown laid out like a blog post, so the user can skim headings and stop on the one they need: a title, a one-line summary, a `##` heading per part with a rule between parts, and a `###` headline per item that leads with a plain name (no ticket key in the headline). Under each headline goes an italic byline with the link, then the spoken paragraph, then the bullets. Leave a blank line between every block. Use exactly this shape:
 
 ```markdown
-#### [BSD-12345: 3–6 word plain name](PR url)
+# Standup · <weekday, month day>
 
-**Say this:** Two or three plain sentences for the meeting: the problem a user saw, and what the fix does, in product terms. No file names.
+<one line of counts, e.g. "5 PRs to hand out · 4 things in progress · 3 finished since Friday">
 
-**How it works**
-- **Root cause:** what the old code did wrong, naming the function or file in backticks.
-- **The fix:** 2–5 bullets, one per step of the mechanism, each naming the code it lives in, e.g. "`undo_redo_middleware.ts` merges consecutive edits to the same field into one undo step, and closes the step when the selection changes."
-- **Worth knowing:** 1–3 bullets on trade-offs, edge cases or what it deliberately doesn't cover. Leave this out if there's nothing a reviewer would ask about.
-- **Tests:** one line on what the new or changed tests prove.
+---
 
-**Status:** Draft or ready · reviewers (assignees, requested, who approved or requested changes) · CI · conflicts.
-**Ask:** what the user needs from the team. Leave this line out when nothing is blocked.
+## 🔍 PRs to hand out for review
+
+### Plain 3–6 word name
+*[BSD-12345](PR url) · <reviewer, or "needs a reviewer"> · <CI: passing / failing: names / running>*
+
+One or two plain sentences: what changes for the user.
+
+- **Before:** one sentence on the root cause, naming the function or file in backticks.
+- **Now:** one or two bullets on the mechanism, each naming the code it lives in.
+- **Note:** one bullet on a trade-off or something it deliberately leaves out. Leave this out if there's nothing a reviewer would ask about.
+
+---
+
+## 🛠️ What I'm working on
+
+### Finished since <day>
+- [BSD-111](url) plain name
+- [BSD-222](url) plain name
+
+### Plain 3–6 word name
+*[BSD-12345](PR or Jira url) · <PR: draft / not labeled for review yet / none yet> · <CI if there's a PR>*
+
+One or two plain sentences: what it's for and where it stands.
+
+- **Now:** one or two bullets on how the code works so far (only when there's a PR).
+- **Left to do:** one line (only when there's a PR).
 ```
 
-If `open` is empty, say "Nothing new for review" and which filters were applied.
-
-### Working on now
-
-Merge the Jira tickets and `in_progress` PRs into one list, matching them by the ticket key in the PR title, so a ticket with a PR appears once. For each:
-
-```markdown
-#### [BSD-12345: 3–6 word plain name](PR url, or the Jira url when there's no PR)
-
-**Say this:** One or two plain sentences: what it's for and where it stands.
-
-**How it works so far** (only when there's a PR)
-- 2–4 bullets in the same style as "The fix" above, from the diff.
-- **Left to do:** what's unfinished, from the draft flag, TODOs, missing tests or the description.
-
-**Status:** Jira status · PR: none yet / draft / open but not labeled for review · CI.
-```
-
-For a ticket with no PR, base "Say this" on the ticket's summary and description, and say there's no PR yet.
-
-### Merged since <day>
-
-One bullet per PR: the linked ticket key and one sentence on what changed for users.
+- In part 1, list the PRs in `open`, newest activity first. If there are none, write "Nothing new for review" and the filters that were applied.
+- In part 2, "Finished since" lists `merged_since`; write "Nothing" if it's empty. Then list the Jira tickets and the `in_progress` PRs, matched by the ticket key in the PR title, so a ticket with a PR appears once. For a ticket with no PR, base its sentences on the ticket's summary and description, with no bullets.
 
 ## Rules
 
-- "Say this" is spoken: plain words a PM would follow, no code names. "How it works" is for the follow-up question from an engineer: name real functions, files and classes in backticks, and explain what each does in the flow rather than just listing it.
-- Keep "How it works" to about 120 words per PR, and "How it works so far" to about 80. Bullets, not paragraphs.
-- Report only what the diff, description, ticket and JSON show. Never guess at behavior, CI or review state. When `ci` is null, leave CI out of the status without comment.
+- The paragraph under each byline is read aloud: plain words a PM would follow, no file or function names. The bullets are for an engineer's follow-up question: name real functions, files and classes in backticks, and say what each does.
+- Keep each item's bullets to about 60 words, three bullets at most (four with **Left to do**). No nested bullets, no test details.
+- Report only what the diff, description, ticket and JSON show. Never guess at behavior, CI or review state. When `ci` is null, leave CI out without comment. Show a Jira status only when it came from the Jira query.
 - Don't post, comment, assign, label or transition anything. This skill only reads.
