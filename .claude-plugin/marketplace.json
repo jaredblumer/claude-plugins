@@ -1,0 +1,14 @@
+{
+  "name": "jaredblumer-plugins",
+  "description": "Jared Blumer's personal Claude Code plugins",
+  "owner": {
+    "name": "Jared Blumer"
+  },
+  "plugins": [
+    {
+      "name": "standup",
+      "source": "./plugins/standup",
+      "description": "Standup brief: what each of your open PRs does and how it was built, plus its review and CI state and what merged since your last standup, ready to say out loud"
+    }
+  ]
+}
