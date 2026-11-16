@@ -1,0 +1,19 @@
+.gitignore
+  s_cc11411866c986::t_2c89d506283c1f 1-3
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f6d146d62a24a509ef23d555d551511ec17093c9",
+  "prompts": {},
+  "sessions": {
+    "s_cc11411866c986": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d656bbc2-1b2a-4774-9485-bd28c2fb4448",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Jared Blumer <jared.blumer@buildout.com>"
+    }
+  }
+}
