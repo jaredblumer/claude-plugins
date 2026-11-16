@@ -16,7 +16,7 @@ import re
 import subprocess
 import sys
 
-VIEW_FIELDS = "body,files,isDraft,reviewDecision,reviewRequests,latestReviews,mergeable,createdAt,updatedAt"
+VIEW_FIELDS = "body,files,headRefOid,isDraft,reviewDecision,reviewRequests,latestReviews,mergeable,createdAt,updatedAt"
 CUBIC_MARKER = "<!-- This is an auto-generated description by cubic"
 
 
@@ -58,16 +58,41 @@ def search(state_args, args):
     return gh(*query)
 
 
-def ci_summary(repo, number):
-    result = subprocess.run(["gh", "pr", "checks", str(number), "-R", repo, "--json", "name,bucket"],
-                            capture_output=True, text=True)
-    if not result.stdout.strip().startswith("["):
-        return {"unavailable": result.stderr.strip().splitlines()[0][:200] if result.stderr.strip() else "no checks"}
-    checks = json.loads(result.stdout)
-    counts = {}
-    for check in checks:
-        counts[check["bucket"]] = counts.get(check["bucket"], 0) + 1
-    return {"counts": counts, "failing": [c["name"] for c in checks if c["bucket"] == "fail"]}
+def try_gh(*args):
+    result = subprocess.run(["gh", *args], capture_output=True, text=True)
+    if result.returncode != 0 or not result.stdout.strip():
+        return None
+    return json.loads(result.stdout)
+
+
+def ci_summary(repo, number, sha):
+    """CI state from whatever the token can read: PR checks, else Actions runs plus commit status."""
+    checks = try_gh("pr", "checks", str(number), "-R", repo, "--json", "name,bucket")
+    if checks is not None:
+        return {
+            "source": "checks",
+            "pending": [c["name"] for c in checks if c["bucket"] == "pending"],
+            "failing": [c["name"] for c in checks if c["bucket"] == "fail"],
+            "passed": sum(1 for c in checks if c["bucket"] == "pass"),
+        }
+
+    runs = try_gh("run", "list", "-R", repo, "--commit", sha, "--limit", "100",
+                  "--json", "workflowName,status,conclusion")
+    status = try_gh("api", f"repos/{repo}/commits/{sha}/status")
+    if runs is None and status is None:
+        return None
+
+    latest = {}
+    for run in runs or []:
+        latest.setdefault(run["workflowName"], run)
+    return {
+        "source": "actions",
+        "pending": [n for n, r in latest.items() if r["status"] != "completed"],
+        "failing": [n for n, r in latest.items()
+                    if r["conclusion"] in ("failure", "timed_out", "cancelled", "startup_failure")],
+        "passed": sum(1 for r in latest.values() if r["conclusion"] == "success"),
+        "commit_status": status["state"] if status and status.get("total_count") else None,
+    }
 
 
 def details(pr, body_chars):
@@ -86,7 +111,7 @@ def details(pr, body_chars):
         "review_decision": view.get("reviewDecision") or "NONE",
         "review_requests": [r.get("login") or r.get("name") for r in view.get("reviewRequests", [])],
         "latest_reviews": [{"author": r["author"]["login"], "state": r["state"]} for r in view.get("latestReviews", [])],
-        "ci": ci_summary(repo, pr["number"]),
+        "ci": ci_summary(repo, pr["number"], view["headRefOid"]),
         "mergeable": view.get("mergeable"),
         "created": view.get("createdAt", "")[:10],
         "updated": view.get("updatedAt", "")[:10],

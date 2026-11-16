@@ -29,7 +29,7 @@ Then for each open PR, newest activity first:
 - **Heading:** the ticket key and a 3–6 word plain name, linked to the PR.
 - **What:** one sentence on the problem the user saw before, in product terms.
 - **How:** one or two sentences on the implementation — the mechanism, not a file list. Name a file or class only when it's what a teammate would ask about.
-- **Status:** draft / ready, who reviewed or is requested, CI passing or failing (name failing checks), conflicts. Say "needs a reviewer" when it has neither an assignee nor a review request.
+- **Status:** draft / ready, who reviewed or is requested, CI from `ci` (passing, running, or failing with the failing names), conflicts. When `ci` is null, leave CI out of the status without comment. Say "needs a reviewer" when it has neither an assignee nor a review request.
 - **Ask** (only if there is one): what the user needs from the team, such as a reviewer or a decision.
 
 Then "Merged since <day>": one line per merged PR.
